@@ -94,14 +94,14 @@ class Pinger {
 	protected function normalizeEndpoint($endpoint, array $data = array()){
 		$url = "";
 
-		if(in_array($endpoint, $this->endpoints)){
-			$url = rtrim($this->apiURL, " /") ."/". rtrim($endpoint, "/");
+		// if(in_array($endpoint, $this->endpoints)){
+			$url = rtrim($this->apiURL, " /") ."/". ltrim($endpoint, "/");
 			if($data){
 				$url = sprintf("%s?%s", rtrim($url, " ?"), $this->toQueryString($data));
 			}
-		}else{
-			throw new InvalidEndpointException("That endpoint doesn't exist");
-		}
+		// }else{
+		// 	throw new InvalidEndpointException("That endpoint doesn't exist");
+		// }
 
 		return $url;
 	}
