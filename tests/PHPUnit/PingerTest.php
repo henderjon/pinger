@@ -18,7 +18,7 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 	function test_post(){
 
 		$dingle = new \Pinger\Pinger("http://httpbin.org/", ["get", "post", "headers"]);
-		// shoudl strip "/"
+		// should strip "/"
 		$response = $dingle->post("/post", array("test_key" => "test_value"));
 
 		$decoded = json_decode($response, true);
