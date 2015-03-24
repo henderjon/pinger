@@ -33,7 +33,7 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 		$dingle = new \Pinger\Pinger("http://httpbin.org", ["get", "post", "headers"]);
 		$response = $dingle->post("post", array("test_key" => "test_value"));
 
-		$info = $dingle->getInfo();
+		$info = $dingle->getResponseMeta();
 
 		$this->assertEquals($info["wrapper_type"], "http");
 
