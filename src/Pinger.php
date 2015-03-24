@@ -32,7 +32,7 @@ class Pinger {
 	/**
 	 * attribute(s) required by stream_context_create()
 	 */
-	protected $user_agent = "henderjon/pinger PHP stream_context_create";
+	protected $user_agent = "PHP stream_context_create()";
 
 	/**
 	 * attribute to store the headers to be used for the request
@@ -67,7 +67,7 @@ class Pinger {
 	 * @return array
 	 */
 	function getResponse(){
-		return $this->responseMeta;
+		return $this->response;
 	}
 
 	/**
@@ -112,6 +112,7 @@ class Pinger {
 		$url = "";
 
 		$url = rtrim($this->apiURL, " /") ."/". ltrim($endpoint, "/");
+
 		if($data){
 			$url = sprintf("%s?%s", rtrim($url, " ?"), $this->toQueryString($data));
 		}
