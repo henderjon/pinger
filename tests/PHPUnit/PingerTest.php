@@ -28,7 +28,7 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 
 	}
 
-	function test_getInfo(){
+	function test_getResponseMeta(){
 
 		$dingle = new \Pinger\Pinger("http://httpbin.org", ["get", "post", "headers"]);
 		$response = $dingle->post("post", array("test_key" => "test_value"));
@@ -36,6 +36,25 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 		$info = $dingle->getResponseMeta();
 
 		$this->assertEquals($info["wrapper_type"], "http");
+
+	}
+
+	function test_getResponse(){
+
+		$dingle = new \Pinger\Pinger("http://httpbin.org", ["get", "post", "headers"]);
+		$response = $dingle->get("headers", array("test_key" => "test_value"));
+
+		$expected = '';
+		$expected .= "{\n";
+  		$expected .= "  \"headers\": {\n";
+		$expected .= "    \"Host\": \"httpbin.org\", \n";
+		$expected .= "    \"User-Agent\": \"PHP stream_context_create()\"\n";
+		$expected .= "  }\n";
+		$expected .= "}\n";
+
+		$info = $dingle->getResponse();
+
+		$this->assertEquals($expected, $info);
 
 	}
 
@@ -56,3 +75,4 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 	}
 
 }
+
