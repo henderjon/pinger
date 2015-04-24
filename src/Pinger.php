@@ -77,27 +77,42 @@ class Pinger {
 	 * @return string
 	 */
 	function get($endpoint, array $data = array()){
-		$url = $this->normalizeEndpoint($endpoint, $data);
-
+		$url     = $this->normalizeEndpoint($endpoint, $data);
 		$context = $this->createHTTPContext(static::METHOD_GET);
-
 		return $this->ping($url, $context);
 	}
 
 	/**
-	 * Method to trigger a POST request to a given endpoint with the given data
+	 * Method to trigger a POST request to a given endpoint with the given data.
+	 * By default, data is urlencoded, switching this off allows the posting of
+	 * a raw body.
+	 *
 	 * @param string $endpoint A valid endpoint
 	 * @param array $data The data to send in the request
+	 * @param  bool $urlencoded Add the x-www-form-urlencoded header
 	 * @return string
 	 */
-	function post($endpoint, array $data = array()){
+	function post($endpoint, $data = "", $urlencoded = true){
 		$url = $this->normalizeEndpoint($endpoint);
 
-		$this->setHeaders(["Content-type" => "application/x-www-form-urlencoded"]);
+		if($urlencoded){
+			$data = $this->toQueryString($data);
+			$this->setHeaders(["Content-type" => "application/x-www-form-urlencoded"]);
+		}
 
 		$context = $this->createHTTPContext(static::METHOD_POST, $data);
-
 		return $this->ping($url, $context);
+	}
+
+	/**
+	 * method to set additional headers to be sent with the request
+	 * @param array $headers An array of key => value pairs to use to create headers
+	 * @return
+	 */
+	function setHeaders(array $headers){
+		foreach($headers as $header => $value){
+			$this->headers[strtolower($header)] = trim($value);
+		}
 	}
 
 	/**
@@ -109,8 +124,6 @@ class Pinger {
 	 * @return string
 	 */
 	protected function normalizeEndpoint($endpoint, array $data = array()){
-		$url = "";
-
 		$url = rtrim($this->apiURL, " /") ."/". ltrim($endpoint, "/");
 
 		if($data){
@@ -138,17 +151,6 @@ class Pinger {
 	}
 
 	/**
-	 * method to set additional headers to be sent with the request
-	 * @param array $headers An array of key => value pairs to use to create headers
-	 * @return
-	 */
-	function setHeaders(array $headers){
-		foreach($headers as $header => $value){
-			$this->headers[strtolower($header)] = trim($value);
-		}
-	}
-
-	/**
 	 * Method to combine the various information necessary to create a stream
 	 * context. POST requests send data here
 	 *
@@ -156,7 +158,7 @@ class Pinger {
 	 * @param array $data The content of the request
 	 * @return resource
 	 */
-	protected function createHTTPContext($method, array $data = array()){
+	protected function createHTTPContext($method, $data = null){
 
 		$opts = array("http" => array("method" => strtoupper($method)));
 
@@ -169,7 +171,7 @@ class Pinger {
 		}
 
 		if($data){
-			$opts["http"]["content"] = $this->toQueryString($data);
+			$opts["http"]["content"] = $data;
 		}
 
 		return stream_context_create($opts);
