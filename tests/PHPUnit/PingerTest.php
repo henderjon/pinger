@@ -10,6 +10,7 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 
 		$decoded = json_decode($response, true);
 
+		$this->assertInstanceOf("\\Pinger\\PingerInterface", $dingle);
 		$this->assertEquals($decoded["args"], ["test_key" => "test_value"]);
 		$this->assertEquals($decoded["url"], "http://httpbin.org/get?test_key=test_value");
 
@@ -61,7 +62,8 @@ class PingerTest extends \PHPUnit_Framework_TestCase {
 
 		$expected = '';
 		$expected .= "{\n";
-  		$expected .= "  \"headers\": {\n";
+		$expected .= "  \"headers\": {\n";
+		$expected .= "    \"Connection\": \"close\", \n";
 		$expected .= "    \"Host\": \"httpbin.org\", \n";
 		$expected .= "    \"User-Agent\": \"PHP stream_context_create()\"\n";
 		$expected .= "  }\n";

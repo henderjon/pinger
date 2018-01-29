@@ -2,7 +2,7 @@
 
 namespace Pinger;
 
-class Pinger {
+class Pinger implements PingerInterface {
 
 	/**
 	 * Explicitly define the base url/version
@@ -18,6 +18,21 @@ class Pinger {
 	 * hold the cURL connection info
 	 */
 	protected $response;
+
+	/**
+	 * hold the cURL connection info
+	 */
+	protected $encType = PHP_QUERY_RFC1738;
+
+	/**
+	 * hold the cURL connection info
+	 */
+	protected $separator = null;
+
+	/**
+	 * hold the cURL connection info
+	 */
+	protected $numPrefix = "no_";
 
 	/**
 	 *
@@ -50,15 +65,37 @@ class Pinger {
 	 * @param type $pass
 	 * @return type
 	 */
-	function __construct($api){
+	public function __construct($api){
 		$this->apiURL    = $api;
+		$this->separator = ini_get("arg_separator.output");
+	}
+
+	/**
+	 * set the encoding type for built queries
+	 */
+	public function setEncType($encType){
+		$this->encType = $encType;
+	}
+
+	/**
+	 * set the separator for built queries
+	 */
+	public function setSeparator($separator){
+		$this->separator = $separator;
+	}
+
+	/**
+	 * set the numeric prefix for built queries
+	 */
+	public function setNumPrefix($numPrefix){
+		$this->numPrefix = $numPrefix;
 	}
 
 	/**
 	 * method to get the info of the last request
 	 * @return array
 	 */
-	function getResponseMeta(){
+	public function getResponseMeta(){
 		return $this->responseMeta;
 	}
 
@@ -66,7 +103,7 @@ class Pinger {
 	 * method to get the info of the last request
 	 * @return array
 	 */
-	function getResponse(){
+	public function getResponse(){
 		return $this->response;
 	}
 
@@ -76,7 +113,7 @@ class Pinger {
 	 * @param array $data The data to send in the request
 	 * @return string
 	 */
-	function get($endpoint, array $data = array()){
+	public function get($endpoint, array $data = array()){
 		$url     = $this->normalizeEndpoint($endpoint, $data);
 		$context = $this->createHTTPContext(static::METHOD_GET);
 		return $this->ping($url, $context);
@@ -92,7 +129,7 @@ class Pinger {
 	 * @param  bool $urlencoded Add the x-www-form-urlencoded header
 	 * @return string
 	 */
-	function post($endpoint, $data = "", $urlencoded = true){
+	public function post($endpoint, $data = "", $urlencoded = true){
 		$url = $this->normalizeEndpoint($endpoint);
 
 		if($urlencoded){
@@ -109,7 +146,7 @@ class Pinger {
 	 * @param array $headers An array of key => value pairs to use to create headers
 	 * @return
 	 */
-	function setHeaders(array $headers){
+	public function setHeaders(array $headers){
 		foreach($headers as $header => $value){
 			$this->headers[strtolower($header)] = trim($value);
 		}
@@ -140,14 +177,15 @@ class Pinger {
 	 * @return string
 	 */
 	protected function ping($url, $context){
-		$stream = fopen($url, 'r', false, $context);
-
-		$this->responseMeta = stream_get_meta_data($stream);
-		$this->response     = stream_get_contents($stream);
-
-		fclose($stream);
-
-		return $this->response;
+		$stream = @fopen($url, 'r', false, $context);
+		if($stream){
+			$this->responseMeta = stream_get_meta_data($stream);
+			$this->response     = stream_get_contents($stream);
+			fclose($stream);
+			return $this->response;
+		}else{
+			throw new PingerException("Failed to open {$url}.");
+		}
 	}
 
 	/**
@@ -185,7 +223,7 @@ class Pinger {
 	 */
 	protected function toQueryString(array $data = array()){
 		if(!$data){ return ""; }
-		return http_build_query($data, "no_", "&");
+		return http_build_query($data, $this->numPrefix, $this->separator, $this->encType);
 	}
 
 	/**
